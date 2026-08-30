@@ -9,7 +9,7 @@
 <body>
     <header class="titlebar">
         <h1 class="titlebar__name">Medias Rename</h1>
-        <p class="titlebar__hint">Trie les médias par date de prise de vue, en convertissant les HEIC au passage.</p>
+        <p class="titlebar__hint">Trie les médias par date de prise de vue.</p>
     </header>
 
     <main class="content">
@@ -31,7 +31,7 @@
                 <div class="row__control stack">
                     <label class="check">
                         <input type="checkbox" id="type-images" checked>
-                        <span>Images <code>jpg, jpeg, png, heic, tiff</code></span>
+                        <span>Images <code>jpg, jpeg, png, heic, heif, tiff</code></span>
                     </label>
                     <label class="check">
                         <input type="checkbox" id="type-videos" checked>
@@ -238,7 +238,10 @@
             <input type="checkbox" id="dry-run" checked>
             <span>Simulation <em>— aucun fichier n'est modifié</em></span>
         </label>
-        <button class="button button--primary" id="run" type="button">Simuler</button>
+        <div class="actionbar__end">
+            <span class="progress" id="progress"></span>
+            <button class="button button--primary" id="run" type="button">Simuler</button>
+        </div>
     </footer>
 
     <section class="console" id="console" aria-live="polite">

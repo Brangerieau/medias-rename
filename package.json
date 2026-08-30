@@ -1,6 +1,6 @@
 {
   "name": "medias-rename",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Renommage de medias a partir de leurs metadonnees",
   "main": "src/main.js",
   "author": "Thibaud Brangerieau <contact@brangerieau-thibaud.fr>",
@@ -44,6 +44,15 @@
       "provider": "github",
       "owner": "Brangerieau",
       "repo": "medias-rename"
-    }
+    },
+    "asarUnpack": [
+      "**/node_modules/exiftool-vendored.pl/**",
+      "**/node_modules/exiftool-vendored.exe/**",
+      "**/node_modules/libheif-js/**"
+    ]
+  },
+  "dependencies": {
+    "exiftool-vendored": "^37.2.0",
+    "heic-convert": "^2.1.0"
   }
 }

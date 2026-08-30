@@ -224,6 +224,18 @@ select.input {
     background: var(--accent);
 }
 
+.button--danger {
+    border-color: transparent;
+    background: var(--danger);
+    color: #fff;
+    font-weight: 600;
+}
+
+.button--danger:hover {
+    background: var(--danger);
+    filter: brightness(1.08);
+}
+
 .button:disabled {
     opacity: .45;
     cursor: default;
@@ -288,6 +300,17 @@ select.input {
     padding: 10px 20px;
     background: var(--bg-panel);
     border-top: 1px solid var(--border);
+}
+
+.actionbar__end {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.progress {
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
 }
 
 .console {
