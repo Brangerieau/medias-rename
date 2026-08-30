@@ -4,7 +4,247 @@
     <meta charset="utf-8">
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'">
     <title>Medias Rename</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <header class="titlebar">
+        <h1 class="titlebar__name">Medias Rename</h1>
+        <p class="titlebar__hint">Trie les médias par date de prise de vue, en convertissant les HEIC au passage.</p>
+    </header>
+
+    <main class="content">
+
+        <!-- 1 — Ce qu'on lit -->
+        <fieldset class="group">
+            <legend class="group__title">1 · Source</legend>
+
+            <div class="row">
+                <label class="row__label" for="source">Dossier à traiter</label>
+                <div class="row__control picker">
+                    <input class="input" id="source" type="text" readonly placeholder="Aucun dossier sélectionné">
+                    <button class="button" type="button" data-pick="source">Parcourir…</button>
+                </div>
+            </div>
+
+            <div class="row">
+                <span class="row__label">Types de fichiers</span>
+                <div class="row__control stack">
+                    <label class="check">
+                        <input type="checkbox" id="type-images" checked>
+                        <span>Images <code>jpg, jpeg, png, heic, tiff</code></span>
+                    </label>
+                    <label class="check">
+                        <input type="checkbox" id="type-videos" checked>
+                        <span>Vidéos <code>mp4, avi, mov, mkv, wmv</code></span>
+                    </label>
+                    <label class="check">
+                        <input type="checkbox" id="recursive" checked>
+                        <span>Inclure les sous-dossiers</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="row">
+                <label class="row__label" for="extra-extensions">Extensions additionnelles</label>
+                <div class="row__control">
+                    <input class="input" id="extra-extensions" type="text" placeholder="dng, raw, webp…">
+                    <p class="hint">Séparées par des virgules.</p>
+                </div>
+            </div>
+        </fieldset>
+
+        <!-- 2 — Conversion, appliquee au vol avant le classement -->
+        <fieldset class="group">
+            <legend class="group__title">2 · Conversion</legend>
+
+            <div class="row">
+                <span class="row__label">HEIC</span>
+                <div class="row__control stack">
+                    <label class="check check--strong">
+                        <input type="checkbox" id="convert-enabled" checked>
+                        <span>Convertir pendant le tri</span>
+                    </label>
+                    <p class="hint">Le fichier converti est classé et renommé comme les autres, en une seule passe.</p>
+                </div>
+            </div>
+
+            <div id="convert-options">
+                <div class="row">
+                    <label class="row__label" for="convert-format">Format de sortie</label>
+                    <div class="row__control">
+                        <select class="input" id="convert-format">
+                            <option value="png" selected>PNG</option>
+                            <option value="jpeg">JPEG</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row" id="convert-quality-row">
+                    <label class="row__label" for="convert-quality">Qualité JPEG</label>
+                    <div class="row__control slider">
+                        <input type="range" id="convert-quality" min="1" max="100" value="85">
+                        <output class="slider__value" id="convert-quality-value">85</output>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <label class="row__label" for="convert-original">Fichier HEIC d'origine</label>
+                    <div class="row__control">
+                        <select class="input" id="convert-original">
+                            <option value="beside">Le conserver à côté du fichier converti</option>
+                            <option value="leave">Le laisser dans le dossier source</option>
+                            <option value="delete">Le supprimer après conversion</option>
+                        </select>
+                        <p class="hint is-hidden" id="convert-original-warning">Suppression irréversible : à n'utiliser qu'après une simulation.</p>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <span class="row__label">Options</span>
+                    <div class="row__control stack">
+                        <label class="check">
+                            <input type="checkbox" id="convert-keep-exif" checked>
+                            <span>Reporter les métadonnées EXIF sur le fichier converti</span>
+                        </label>
+                        <label class="check">
+                            <input type="checkbox" id="convert-skip-existing" checked>
+                            <span>Ignorer les HEIC déjà convertis</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </fieldset>
+
+        <!-- 3 — D'ou vient la date qui sert de cle de tri -->
+        <fieldset class="group">
+            <legend class="group__title">3 · Date de référence</legend>
+
+            <div class="row">
+                <span class="row__label">Ordre de priorité</span>
+                <div class="row__control stack">
+                    <label class="check">
+                        <input type="checkbox" id="tag-original" checked>
+                        <span><code>DateTimeOriginal</code> <em>— date de prise de vue</em></span>
+                    </label>
+                    <label class="check">
+                        <input type="checkbox" id="tag-media" checked>
+                        <span><code>MediaCreateDate</code> <em>— création vidéo</em></span>
+                    </label>
+                    <label class="check">
+                        <input type="checkbox" id="tag-create" checked>
+                        <span><code>CreateDate</code></span>
+                    </label>
+                    <label class="check">
+                        <input type="checkbox" id="tag-mtime">
+                        <span>Date de modification du fichier <em>— dernier recours</em></span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="row">
+                <label class="row__label" for="no-date">Fichiers sans date</label>
+                <div class="row__control">
+                    <select class="input" id="no-date">
+                        <option value="skip">Laisser en place</option>
+                        <option value="folder">Regrouper dans « sans date »</option>
+                    </select>
+                </div>
+            </div>
+        </fieldset>
+
+        <!-- 4 — Comment on nomme le resultat -->
+        <fieldset class="group">
+            <legend class="group__title">4 · Renommage</legend>
+
+            <div class="row">
+                <label class="row__label" for="folder-pattern">Nom des dossiers</label>
+                <div class="row__control">
+                    <select class="input" id="folder-pattern" data-custom="folder-custom">
+                        <option value="jour DDMM">jour DDMM</option>
+                        <option value="YYYY/MM">AAAA / MM</option>
+                        <option value="YYYY-MM-DD">AAAA-MM-JJ</option>
+                        <option value="none">Aucun — tout à la racine</option>
+                        <option value="custom">Personnalisé…</option>
+                    </select>
+                    <input class="input is-hidden" id="folder-custom" type="text" placeholder="jour %d%m">
+                </div>
+            </div>
+
+            <div class="row">
+                <label class="row__label" for="file-pattern">Nom des fichiers</label>
+                <div class="row__control">
+                    <select class="input" id="file-pattern" data-custom="file-custom">
+                        <option value="HHhMMminSSs">HHhMMminSSs</option>
+                        <option value="YYYYMMDD-HHMMSS">AAAAMMJJ-HHMMSS</option>
+                        <option value="keep">Conserver le nom d'origine</option>
+                        <option value="custom">Personnalisé…</option>
+                    </select>
+                    <input class="input is-hidden" id="file-custom" type="text" placeholder="%Hh%Mmin%Ss">
+                </div>
+            </div>
+
+            <div class="row">
+                <label class="row__label" for="collision">En cas de doublon</label>
+                <div class="row__control">
+                    <select class="input" id="collision">
+                        <option value="counter">Ajouter un compteur <code>-1</code>, <code>-2</code>…</option>
+                        <option value="skip">Ignorer le fichier</option>
+                        <option value="overwrite">Écraser l'existant</option>
+                    </select>
+                </div>
+            </div>
+        </fieldset>
+
+        <!-- 5 — Ou atterrit le resultat -->
+        <fieldset class="group">
+            <legend class="group__title">5 · Destination</legend>
+
+            <div class="row">
+                <span class="row__label">Mode</span>
+                <div class="row__control stack">
+                    <label class="check">
+                        <input type="radio" name="mode" value="move" checked>
+                        <span>Réorganiser dans le dossier source</span>
+                    </label>
+                    <label class="check">
+                        <input type="radio" name="mode" value="copy">
+                        <span>Copier vers un autre dossier <em>— laisse la source intacte</em></span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="row is-hidden" id="target-row">
+                <label class="row__label" for="target">Dossier de sortie</label>
+                <div class="row__control picker">
+                    <input class="input" id="target" type="text" readonly placeholder="Aucun dossier sélectionné">
+                    <button class="button" type="button" data-pick="target">Parcourir…</button>
+                </div>
+            </div>
+
+            <div class="row">
+                <span class="row__label">Nettoyage</span>
+                <div class="row__control stack">
+                    <label class="check">
+                        <input type="checkbox" id="prune" checked>
+                        <span>Supprimer les dossiers vides à la fin</span>
+                    </label>
+                </div>
+            </div>
+        </fieldset>
+    </main>
+
+    <footer class="actionbar">
+        <label class="check check--strong">
+            <input type="checkbox" id="dry-run" checked>
+            <span>Simulation <em>— aucun fichier n'est modifié</em></span>
+        </label>
+        <button class="button button--primary" id="run" type="button">Simuler</button>
+    </footer>
+
+    <section class="console" id="console" aria-live="polite">
+        <p class="console__line console__line--muted">En attente. Choisis un dossier puis lance le traitement.</p>
+    </section>
+
+    <script src="renderer.js"></script>
 </body>
 </html>
