@@ -1,0 +1,20 @@
+services:
+  # Conteneur de packaging Linux / Windows.
+  # A utiliser avec `docker compose run --rm builder <commande>` : il n'a pas
+  # vocation a tourner en permanence, et l'application ne s'execute pas dedans.
+  builder:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    working_dir: /app
+    volumes:
+      - .:/app
+      # node_modules dedie : les binaires natifs Linux ne doivent jamais
+      # ecraser ceux installes sur l'hote macOS.
+      - node_modules_linux:/app/node_modules
+      - electron_cache:/root/.cache
+    command: npx electron-builder --linux
+
+volumes:
+  node_modules_linux:
+  electron_cache:

@@ -1,0 +1,44 @@
+{
+  "name": "medias-rename",
+  "version": "1.0.0",
+  "description": "Renommage de medias a partir de leurs metadonnees",
+  "main": "src/main.js",
+  "author": "Thibaud Brangerieau <contact@brangerieau-thibaud.fr>",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "build:mac": "electron-builder --mac",
+    "build:linux": "electron-builder --linux",
+    "build:win": "electron-builder --win"
+  },
+  "devDependencies": {
+    "electron": "44.0.0",
+    "electron-builder": "^26.15.3"
+  },
+  "build": {
+    "appId": "fr.brangerieauthibaud.medias-rename",
+    "productName": "Medias Rename",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "src/**/*",
+      "package.json"
+    ],
+    "mac": {
+      "target": "dmg",
+      "category": "public.app-category.utilities"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Utility"
+    },
+    "win": {
+      "target": "nsis"
+    }
+  }
+}
