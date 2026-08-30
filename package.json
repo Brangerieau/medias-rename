@@ -1,6 +1,6 @@
 {
   "name": "medias-rename",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "Renommage de medias a partir de leurs metadonnees",
   "main": "src/main.js",
   "author": "Thibaud Brangerieau <contact@brangerieau-thibaud.fr>",
@@ -39,6 +39,11 @@
     },
     "win": {
       "target": "nsis"
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "Brangerieau",
+      "repo": "medias-rename"
     }
   }
 }
