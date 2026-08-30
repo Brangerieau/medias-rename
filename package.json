@@ -18,7 +18,7 @@
   },
   "build": {
     "appId": "fr.brangerieauthibaud.medias-rename",
-    "productName": "Medias Rename",
+    "productName": "Médias Rename",
     "directories": {
       "output": "dist"
     },
@@ -28,17 +28,20 @@
     ],
     "mac": {
       "target": "dmg",
-      "category": "public.app-category.utilities"
+      "category": "public.app-category.utilities",
+      "icon": "build/icon.icns"
     },
     "linux": {
       "target": [
         "AppImage",
         "deb"
       ],
-      "category": "Utility"
+      "category": "Utility",
+      "icon": "build/icon.png"
     },
     "win": {
-      "target": "nsis"
+      "target": "nsis",
+      "icon": "build/icon.ico"
     },
     "publish": {
       "provider": "github",

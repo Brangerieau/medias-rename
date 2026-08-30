@@ -1,4 +1,4 @@
-# Medias Rename
+# Médias Rename
 
 Application de bureau (Electron) qui trie et renomme des photos et des vidéos
 à partir de leurs métadonnées, avec conversion HEIC intégrée.
@@ -15,6 +15,7 @@ passe, avec un mode simulation activé par défaut.
 - [Installer le projet (développement)](#installer-le-projet-développement)
 - [Utiliser l'application](#utiliser-lapplication)
 - [Structure du projet](#structure-du-projet)
+- [Icône](#icône)
 - [Packager en local](#packager-en-local)
 - [Publier une release](#publier-une-release)
 - [Licence](#licence)
@@ -31,9 +32,9 @@ l'application, il n'y a rien à installer à côté.
 
 | Système | Fichier | Installation |
 | --- | --- | --- |
-| macOS (Intel et Apple Silicon) | `Medias Rename-x.y.z.dmg` | Ouvrir le `.dmg`, glisser l'app dans **Applications** |
-| Windows | `Medias Rename Setup x.y.z.exe` | Lancer l'installeur NSIS |
-| Linux (universel) | `Medias Rename-x.y.z.AppImage` | `chmod +x` puis exécuter |
+| macOS (Intel et Apple Silicon) | `Médias Rename-x.y.z.dmg` | Ouvrir le `.dmg`, glisser l'app dans **Applications** |
+| Windows | `Médias Rename Setup x.y.z.exe` | Lancer l'installeur NSIS |
+| Linux (universel) | `Médias Rename-x.y.z.AppImage` | `chmod +x` puis exécuter |
 | Linux (Debian / Ubuntu) | `medias-rename_x.y.z_amd64.deb` | `sudo dpkg -i medias-rename_*.deb` |
 
 ### Premier lancement
@@ -46,7 +47,7 @@ lancement.
   « l'application est endommagée » apparaît, lever la mise en quarantaine :
 
   ```bash
-  xattr -dr com.apple.quarantine "/Applications/Medias Rename.app"
+  xattr -dr com.apple.quarantine "/Applications/Médias Rename.app"
   ```
 
 - **Windows** : SmartScreen affiche « Windows a protégé votre ordinateur » →
@@ -174,6 +175,12 @@ src/
     ├── dates.js         Analyse des dates EXIF, modèles de nommage, assainissement
     └── tools.js         Résolution et appel du binaire ExifTool embarqué
 
+build/                   Ressources de packaging, hors bundle applicatif
+├── icon.svg             Source vectorielle de l'icône
+├── icon.png             1024×1024 — Linux, et source des conversions
+├── icon.icns            macOS, 10 résolutions de 16 à 1024 px
+└── icon.ico             Windows, 7 tailles de 16 à 256 px
+
 docker/Dockerfile        Image de packaging Linux / Windows (avec Wine)
 compose.yml              Service « builder » pour les builds cross-plateformes
 .github/workflows/       CI de release
@@ -183,6 +190,62 @@ Makefile
 Le traitement tourne entièrement dans le processus principal ; le renderer ne
 fait que composer un objet d'options et afficher les événements reçus
 (`start`, `progress`, `log`, `done`).
+
+---
+
+## Icône
+
+L'icône est dessinée en SVG dans [`build/icon.svg`](build/icon.svg) : une
+pellicule perforée dont la fenêtre centrale porte un cadran, les deux moitiés
+du produit — des médias, une date.
+
+Le fichier suit la grille macOS : canevas de 1024 px, tuile de 824 px centrée
+(100 px de marge) au rayon de 185 px. C'est **la seule source à modifier** ; les
+trois formats binaires en dérivent.
+
+### Régénérer les formats
+
+Nécessite `librsvg` et `iconutil` (fourni avec macOS) :
+
+```bash
+brew install librsvg
+```
+
+**PNG 1024 — Linux, et source des autres conversions :**
+
+```bash
+rsvg-convert -w 1024 -h 1024 build/icon.svg -o build/icon.png
+```
+
+**ICNS — macOS.** Chaque résolution est rendue depuis le SVG plutôt que réduite
+depuis le PNG : les traits fins restent nets aux petites tailles.
+
+```bash
+ICONSET=$(mktemp -d)/icon.iconset && mkdir -p "$ICONSET"
+for spec in 16:icon_16x16 32:icon_16x16@2x 32:icon_32x32 64:icon_32x32@2x \
+            128:icon_128x128 256:icon_128x128@2x 256:icon_256x256 \
+            512:icon_256x256@2x 512:icon_512x512 1024:icon_512x512@2x; do
+  rsvg-convert -w "${spec%%:*}" -h "${spec%%:*}" build/icon.svg \
+    -o "$ICONSET/${spec#*:}.png"
+done
+iconutil -c icns "$ICONSET" -o build/icon.icns
+```
+
+**ICO — Windows.** Produit par le convertisseur d'electron-builder, qui génère
+les 7 tailles attendues (16 à 256 px) :
+
+```bash
+node -e "
+require('./node_modules/app-builder-lib/out/util/iconConverter.js').convertIcon({
+  sources: ['build/icon.png'], fallbackSources: [], roots: [process.cwd()],
+  format: 'ico', outDir: 'build',
+}).then(r => console.log(r.icons));
+"
+```
+
+> Les trois fichiers dérivés sont **versionnés** : la CI n'a donc ni conversion
+> à faire ni toolset à télécharger. Après toute retouche du SVG, régénérer les
+> trois et les commiter ensemble.
 
 ---
 
